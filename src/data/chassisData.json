@@ -924,7 +924,7 @@
                     ]
                 }
             ]
-        },        
+        },
         {
             "name": "Little Sestra",
             "stats": {
@@ -1014,7 +1014,7 @@
                     }
                 }
             ]
-        },        
+        },
         {
             "name": "Mantis",
             "stats": {
@@ -1085,7 +1085,7 @@
                     ]
                 }
             ]
-        },   
+        },
         {
             "name": "Photon",
             "stats": {
@@ -1152,78 +1152,76 @@
                     ]
                 }
             ]
-        },       
+        },
         {
-            "solo": {
-                "name": "Solo",
-                "stats": {
-                    "structure_pts": 16,
-                    "energy_pts": 13,
-                    "heat_cap": 10,
-                    "system_slots": 12,
-                    "module_slots": 4,
-                    "cargo_cap": 6,
-                    "tech_level": 3,
-                    "salvage_value": 4
+            "name": "Solo",
+            "stats": {
+                "structure_pts": 16,
+                "energy_pts": 13,
+                "heat_cap": 10,
+                "system_slots": 12,
+                "module_slots": 4,
+                "cargo_cap": 6,
+                "tech_level": 3,
+                "salvage_value": 4
+            },
+            "chassis_ability": "Polycarbonate Stealth Chassis: The Solo cannot be targeted with anything that uses the Targeter Trait such as targeting Modules. It also cannot be seen by anything with the Optics Trait or Scanner Trait. It does not appear on sensors, radar systems, or scanners, and needs clear and direct visual confirmation to be spotted.",
+            "description": "The 'S-1300' Solo was designed by Sakura for use in wetwork operations due to its capability to smuggle deadly weaponry close to exposed targets, whilst avoiding radar and scanning systems. As a result of its design, it has become prized by smugglers across the wastes who utilise its Chassis to ferry all manner of contraband through the various arcos and militarised checkpoints dotted around the wastelands.",
+            "patterns": [
+                {
+                    "name": "Smuggler Pattern",
+                    "description": "A versatile build for smugglers of the wastelands transporting patented goods or ferrying arco refugees to safe zones.",
+                    "systems": [
+                        ".50 Cal Machine Gun",
+                        "Escape Hatch",
+                        "High Gain Antenna",
+                        "Locomotion System",
+                        "Personnel Transport Pod",
+                        "Smuggling Hold"
+                    ],
+                    "modules": [
+                        "Comms Module",
+                        "Concealed Equipment Locker",
+                        "Encrypted Comms",
+                        "Voice Modulator"
+                    ]
                 },
-                "chassis_ability": "Polycarbonate Stealth Chassis: The Solo cannot be targeted with anything that uses the Targeter Trait such as targeting Modules. It also cannot be seen by anything with the Optics Trait or Scanner Trait. It does not appear on sensors, radar systems, or scanners, and needs clear and direct visual confirmation to be spotted.",
-                "description": "The 'S-1300' Solo was designed by Sakura for use in wetwork operations due to its capability to smuggle deadly weaponry close to exposed targets, whilst avoiding radar and scanning systems. As a result of its design, it has become prized by smugglers across the wastes who utilise its Chassis to ferry all manner of contraband through the various arcos and militarised checkpoints dotted around the wastelands.",
-                "patterns": [
-                    {
-                        "name": "Smuggler Pattern",
-                        "description": "A versatile build for smugglers of the wastelands transporting patented goods or ferrying arco refugees to safe zones.",
-                        "systems": [
-                            ".50 Cal Machine Gun",
-                            "Escape Hatch",
-                            "High Gain Antenna",
-                            "Locomotion System",
-                            "Personnel Transport Pod",
-                            "Smuggling Hold"
-                        ],
-                        "modules": [
-                            "Comms Module",
-                            "Concealed Equipment Locker",
-                            "Encrypted Comms",
-                            "Voice Modulator"
-                        ]
-                    },
-                    {
-                        "name": "Infiltrator Pattern",
-                        "description": "Designed to blend into the background in an arco and perform hacking and reconnaissance missions unseen.",
-                        "systems": [
-                            "Ejection System",
-                            "High Gain Antenna",
-                            "Industrial Body Kit (Mule)",
-                            "Locomotion System",
-                            "Smoke Machine",
-                            "Tracking Node"
-                        ],
-                        "modules": [
-                            "Comms Module",
-                            "Comms Tapper",
-                            "Eggs Mayhem",
-                            "Voice Modulator"
-                        ]
-                    },
-                    {
-                        "name": "Sakura Pattern",
-                        "description": "Developed for lone wetwork, a Mech of this pattern was said to be responsible for the assassination of President Nadine Kureigh in the First Corpo War and the Fall of Nations.",
-                        "systems": [
-                            "Rail Rifle",
-                            "Ejection System",
-                            "High Gain Antenna",
-                            "Locomotion System"
-                        ],
-                        "modules": [
-                            "Comms Module",
-                            "ECM Transmitter",
-                            "Encrypted Comms",
-                            "Laser Guidance"
-                        ]
-                    }
-                ]
-            }
-        },                           
+                {
+                    "name": "Infiltrator Pattern",
+                    "description": "Designed to blend into the background in an arco and perform hacking and reconnaissance missions unseen.",
+                    "systems": [
+                        "Ejection System",
+                        "High Gain Antenna",
+                        "Industrial Body Kit (Mule)",
+                        "Locomotion System",
+                        "Smoke Machine",
+                        "Tracking Node"
+                    ],
+                    "modules": [
+                        "Comms Module",
+                        "Comms Tapper",
+                        "Eggs Mayhem",
+                        "Voice Modulator"
+                    ]
+                },
+                {
+                    "name": "Sakura Pattern",
+                    "description": "Developed for lone wetwork, a Mech of this pattern was said to be responsible for the assassination of President Nadine Kureigh in the First Corpo War and the Fall of Nations.",
+                    "systems": [
+                        "Rail Rifle",
+                        "Ejection System",
+                        "High Gain Antenna",
+                        "Locomotion System"
+                    ],
+                    "modules": [
+                        "Comms Module",
+                        "ECM Transmitter",
+                        "Encrypted Comms",
+                        "Laser Guidance"
+                    ]
+                }
+            ]
+        },
         {
             "name": "Terra",
             "stats": {
@@ -2062,6 +2060,6 @@
                     ]
                 }
             ]
-        }                                
+        }
     ]
 }

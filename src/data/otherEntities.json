@@ -1,0 +1,159 @@
+{
+  "other_entities": [
+    {
+      "category": "Bio-Titans",
+      "entities": [
+        {
+          "name": "Scylla",
+          "description": "A gigantic, armoured, arachnid-like predator beast. It has no concept that the war it was designed to fight ended aeons ago, and continues to tear apart anything that enters into its mountainous domain.",
+          "structure_pts": 39,
+          "abilities": [
+            {
+              "name": "Scythe Attack",
+              "description": "Scylla stabs with its forearms attempting to pierce it's prey.",
+              "range": "Close",
+              "damage": "4 SP",
+              "traits": ["Melee", "Multi-Attack (2)"]
+            },
+            {
+              "name": "Tail Sweep",
+              "description": "Scylla makes one giant sweeping attack with their tail. This hits every target within Medium Range, dealing 3 SP damage on a hit. Targets hit are knocked Prone and gain the Vulnerable Trait.",
+              "actionType": "Turn Action",
+              "traits": ["Melee"]
+            },
+            {
+              "name": "Climb",
+              "description": "Scylla can effortlessly climb over difficult and vertical terrain, rocky surfaces, and other obstacles.",
+              "traits": ["Passive"]
+            },
+            {
+              "name": "Armour Plating",
+              "description": "When Scylla takes damage, instead destroy a layer of Armour Plating and negate all of the damage and any effects.",
+              "traits": ["Passive"],
+              "uses": 3
+            },
+            {
+              "name": "Ambush Predator",
+              "description": "Unless detected, Scylla always acts first in combat.",
+              "traits": ["Passive"]
+            },
+            {
+              "name": "Titanic Actions",
+              "description": "Scylla can take three Titanic Actions, choosing from the options below. Only one Titanic Action may be chosen at a time and only at the end of another Pilot's or NPC's turn. Scylla regains spent Titanic Actions at the start of their turn.",
+              "options": [
+                "Scylla moves one Range Band.",
+                "Scylla makes a single Scythe Attack. This does not have the Multi-Attack Trait.",
+                "Scylla makes a Tail Sweep Attack (Costs 2 Titanic Actions)."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Vehicles",
+      "entities": [
+        {
+          "name": "Power Loader",
+          "description": "A pneumatically powered heavy loader for moving cargo.",
+          "structure_pts": 1,
+          "tech_level": 1,
+          "salvage_value": 1,
+          "systems": [
+            "Locomotion System",
+            {
+              "name": "Rigging Arm",
+              "count": 2,
+              "range": "Close",
+              "damage": "1 SP",
+              "traits": ["Melee", "Load"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Drones",
+      "entities": [
+        {
+          "name": "Defacer Drone",
+          "description": "Used for salvaging and crowd control, their distinctive buzzsaw sound has struck fear into many protesters.",
+          "structure_pts": 2,
+          "tech_level": 1,
+          "salvage_value": 1,
+          "systems": [
+            "Hover Locomotion System",
+            {
+              "name": "Chainsaw Arm",
+              "range": "Close",
+              "damage": "2 SP",
+              "traits": ["Melee", "Salvaging"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Creatures",
+      "entities": [
+        {
+          "name": "Irradiated Scorpion",
+          "description": "Mutated beyond their usual size, they have been known to kill entire camps of wasters.",
+          "hp": 4,
+          "abilities": [
+            {
+              "name": "Stinger",
+              "range": "Close",
+              "damage": "2 HP",
+              "traits": ["Melee", "Poison", "Deadly (Creatures Only)"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "People",
+      "entities": [
+        {
+          "name": "Wastelander",
+          "description": "Represents the myriad of common denizens of the wastelands.",
+          "hp": 2,
+          "abilities": [
+            {
+              "name": "Improvised Melee Weapon",
+              "range": "Close",
+              "damage": "2 HP",
+              "traits": ["Melee"]
+            },
+            {
+              "name": "Salvaging Tools",
+              "description": "Can be used for salvaging operations."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Squads",
+      "entities": [
+        {
+          "name": "Waster Mob",
+          "description": "A mob of wastelanders with improvised weapons.",
+          "hp": 4,
+          "abilities": [
+            {
+              "name": "Improvised Weapons",
+              "range": "Close",
+              "damage": "4 HP",
+              "traits": ["Melee", "Multi-Attack (2)"]
+            },
+            {
+              "name": "Salvaging Tools",
+              "description": "Can be used for salvaging operations."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

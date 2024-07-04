@@ -3,54 +3,12 @@ import { PlusCircle, MinusCircle, Trash2, Plus, ChevronDown, ChevronUp } from 'l
 import { Card, CardHeader, CardContent } from './components/ui/card.tsx';
 import { AlertCircle, Check, X, ToggleLeft, ToggleRight } from 'lucide-react';
 import Tooltip from './components/Tooltip';
+import OtherEntity from './OtherEntity';
 import mechChassisData from './data/chassisData.json';
 import systemsData from './data/systems.json';
 import modulesData from './data/modules.json';
-
-const EditableText = ({ value, onChange }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(value);
-
-  const handleBlur = () => {
-    onChange(editValue);
-    setIsEditing(false);
-  };
-
-  return isEditing ? (
-    <input
-      type="text"
-      value={editValue}
-      onChange={(e) => setEditValue(e.target.value)}
-      onBlur={handleBlur}
-      onKeyPress={(e) => e.key === 'Enter' && handleBlur()}
-      className="w-full p-1 border rounded text-sm"
-      autoFocus
-    />
-  ) : (
-    <span onClick={() => setIsEditing(true)} className="cursor-pointer hover:bg-gray-200 p-1 rounded text-sm">
-      {value}
-    </span>
-  );
-};
-
-const StatCounter = ({ label, value, max, onChange, onMaxChange }) => (
-  <div className="flex items-center justify-between mb-1 text-sm">
-    <span className="mr-1 w-8">{label}:</span>
-    <div className="flex items-center">
-      <button onClick={() => onChange(Math.max(0, value - 1))} className="p-1">
-        <MinusCircle size={14} />
-      </button>
-      <span className="mx-1">{value}/</span>
-      <EditableText
-        value={max.toString()}
-        onChange={(newMax) => onMaxChange(parseInt(newMax) || 0)}
-      />
-      <button onClick={() => onChange(Math.min(max, value + 1))} className="p-1">
-        <PlusCircle size={14} />
-      </button>
-    </div>
-  </div>
-);
+import otherEntitiesData from './data/otherEntities.json';
+import { EditableText, StatCounter } from './components/CommonComponents';
 
 const Pilot = ({ pilot, onUpdate, onRemove }) => (
   <Card className="mb-2">
@@ -272,15 +230,20 @@ const Mech = ({ mech, onUpdate, onRemove, onActed, onToggleDisabled }) => {
 
 const App = () => {
   const [mechs, setMechs] = useState([]);
-  const [showAddMechModal, setShowAddMechModal] = useState(false);
+  const [otherEntities, setOtherEntities] = useState([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedEntityType, setSelectedEntityType] = useState('');
   const [selectedChassis, setSelectedChassis] = useState('');
   const [selectedPattern, setSelectedPattern] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedEntity, setSelectedEntity] = useState('');
+  const [availablePatterns, setAvailablePatterns] = useState([]);
 
   const addMech = () => {
     let newMech;
     if (selectedChassis === 'custom') {
       newMech = {
-        id: Date.now(), // Add a unique id
+        id: Date.now(),
         name: "New Custom Mech",
         sp: 10, maxSp: 10,
         ep: 5, maxEp: 5,
@@ -293,7 +256,7 @@ const App = () => {
       const chassisData = mechChassisData.mech_chassis.find(mech => mech.name === selectedChassis);
       const patternData = chassisData.patterns.find(pattern => pattern.name === selectedPattern);
       newMech = {
-        id: Date.now(), // Add a unique id
+        id: Date.now(),
         name: `${selectedChassis} - ${selectedPattern}`,
         sp: chassisData.stats.structure_pts,
         maxSp: chassisData.stats.structure_pts,
@@ -309,17 +272,64 @@ const App = () => {
       };
     }
     setMechs([...mechs, newMech]);
-    setShowAddMechModal(false);
+    setShowAddModal(false);
+    resetSelections();
+  };
+
+  const addOtherEntity = () => {
+    const categoryData = otherEntitiesData.other_entities.find(cat => cat.category === selectedCategory);
+    const entityData = categoryData.entities.find(ent => ent.name === selectedEntity);
+    const newEntity = {
+      id: Date.now(),
+      ...entityData,
+      category: selectedCategory,
+      sp: entityData.structure_pts,
+      maxSp: entityData.structure_pts,
+      hp: entityData.hp,
+      maxHp: entityData.hp
+    };
+    setOtherEntities([...otherEntities, newEntity]);
+    setShowAddModal(false);
+    resetSelections();
+  };
+
+  const resetSelections = () => {
+    setSelectedEntityType('');
     setSelectedChassis('');
     setSelectedPattern('');
+    setSelectedCategory('');
+    setSelectedEntity('');
   };
 
   const updateMech = (id, updatedMech) => {
     setMechs(mechs.map(mech => mech.id === id ? updatedMech : mech));
   };
 
+  const updateOtherEntity = (id, updatedEntity) => {
+    setOtherEntities(otherEntities.map(entity => entity.id === id ? updatedEntity : entity));
+  };
+
   const removeMech = (id) => {
     setMechs(mechs.filter(mech => mech.id !== id));
+  };
+
+  const removeOtherEntity = (id) => {
+    setOtherEntities(otherEntities.filter(entity => entity.id !== id));
+  };
+
+  const selectChassis = (chassisName) => {
+    setSelectedChassis(chassisName);
+    if (chassisName === 'custom') {
+      setAvailablePatterns([]);
+    } else {
+      const chassis = mechChassisData.mech_chassis.find(mech => mech.name === chassisName);
+      setAvailablePatterns(chassis ? chassis.patterns.map(p => p.name) : []);
+    }
+    setSelectedPattern('');
+  };
+
+  const selectPattern = (patternName) => {
+    setSelectedPattern(patternName);
   };
 
   const handleMechActed = (id) => {
@@ -351,61 +361,136 @@ const App = () => {
             mech={mech}
             onUpdate={(updatedMech) => updateMech(mech.id, updatedMech)}
             onRemove={() => removeMech(mech.id)}
-            onActed={handleMechActed}
-            onToggleDisabled={toggleMechDisabled}
+          />
+        ))}
+        {otherEntities.map((entity) => (
+          <OtherEntity
+            key={entity.id}
+            entity={entity}
+            onUpdate={(updatedEntity) => updateOtherEntity(entity.id, updatedEntity)}
+            onRemove={() => removeOtherEntity(entity.id)}
           />
         ))}
       </div>
-      <button onClick={() => setShowAddMechModal(true)} className="mt-4 p-2 bg-green-500 text-white rounded flex items-center text-sm">
-        <Plus size={16} className="mr-1" /> Add Mech/Vehicle
+      <button onClick={() => setShowAddModal(true)} className="mt-4 p-2 bg-green-500 text-white rounded flex items-center text-sm">
+        <Plus size={16} className="mr-1" /> Add Entity
       </button>
 
-      {showAddMechModal && (
+      {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-4 rounded-lg">
-            <h2 className="text-lg font-bold mb-2">Select Mech Chassis</h2>
-            <select
-              value={selectedChassis}
-              onChange={(e) => {
-                setSelectedChassis(e.target.value);
-                setSelectedPattern('');
-              }}
-              className="w-full p-2 mb-4 border rounded"
-            >
-              <option value="">Select a chassis</option>
-              {mechChassisData.mech_chassis.map((chassis) => (
-                <option key={chassis.name} value={chassis.name}>{chassis.name}</option>
-              ))}
-              <option value="custom">Custom Mech</option>
-            </select>
-            {selectedChassis && selectedChassis !== 'custom' && (
-              <select
-                value={selectedPattern}
-                onChange={(e) => setSelectedPattern(e.target.value)}
-                className="w-full p-2 mb-4 border rounded"
+          <div className="bg-white p-4 rounded-lg max-w-lg w-full">
+            <h2 className="text-lg font-bold mb-2">Add New Entity</h2>
+            <div className="mb-4">
+              <button
+                onClick={() => setSelectedEntityType('mech')}
+                className={`mr-2 p-2 ${selectedEntityType === 'mech' ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
               >
-                <option value="">Select a pattern</option>
-                {mechChassisData.mech_chassis
-                  .find(chassis => chassis.name === selectedChassis)
-                  .patterns.map((pattern) => (
-                    <option key={pattern.name} value={pattern.name}>{pattern.name}</option>
-                  ))
-                }
-              </select>
+                Mech
+              </button>
+              <button
+                onClick={() => setSelectedEntityType('other')}
+                className={`p-2 ${selectedEntityType === 'other' ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
+              >
+                Other Entity
+              </button>
+            </div>
+
+            {selectedEntityType === 'mech' && (
+              <>
+                <h3 className="font-bold mb-2">Select Chassis:</h3>
+                <div className="grid grid-cols-4 gap-2 mb-4">
+                  {mechChassisData.mech_chassis.map((chassis) => (
+                    <button
+                      key={chassis.name}
+                      onClick={() => selectChassis(chassis.name)}
+                      className={`p-2 ${selectedChassis === chassis.name ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
+                    >
+                      {chassis.name}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => selectChassis('custom')}
+                    className={`p-2 ${selectedChassis === 'custom' ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
+                  >
+                    Custom Mech
+                  </button>
+                </div>
+
+                {selectedChassis && selectedChassis !== 'custom' && (
+                  <>
+                    <h3 className="font-bold mb-2">Select Pattern:</h3>
+                    <div className="grid grid-cols-2 gap-2 mb-4">
+                      {availablePatterns.map((pattern) => (
+                        <button
+                          key={pattern}
+                          onClick={() => selectPattern(pattern)}
+                          className={`p-2 ${selectedPattern === pattern ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
+                        >
+                          {pattern}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
             )}
+
+{selectedEntityType === 'other' && (
+  <>
+    <h3 className="font-bold mb-2">Select Category:</h3>
+    <div className="grid grid-cols-2 gap-2 mb-4">
+      {otherEntitiesData.other_entities.map((category) => (
+        <button
+          key={category.category}
+          onClick={() => {
+            setSelectedCategory(category.category);
+            setSelectedEntity('');
+          }}
+          className={`p-2 ${selectedCategory === category.category ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
+        >
+          {category.category}
+        </button>
+      ))}
+    </div>
+
+    {selectedCategory && (
+      <>
+        <h3 className="font-bold mb-2">Select Entity:</h3>
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {otherEntitiesData.other_entities
+            .find(cat => cat.category === selectedCategory)
+            ?.entities.map((entity) => (
+              <button
+                key={entity.name}
+                onClick={() => setSelectedEntity(entity.name)}
+                className={`p-2 ${selectedEntity === entity.name ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
+              >
+                {entity.name}
+              </button>
+            ))
+          }
+        </div>
+      </>
+    )}
+  </>
+)}
+
             <div className="flex justify-end">
               <button
-                onClick={() => setShowAddMechModal(false)}
+                onClick={() => setShowAddModal(false)}
                 className="mr-2 p-2 bg-gray-300 rounded"
               >
                 Cancel
               </button>
               <button
-                onClick={addMech}
+                onClick={selectedEntityType === 'mech' ? addMech : addOtherEntity}
                 className="p-2 bg-blue-500 text-white rounded"
-                disabled={!selectedChassis || (selectedChassis !== 'custom' && !selectedPattern)}
+                disabled={
+                  (selectedEntityType === 'mech' && (!selectedChassis || (selectedChassis !== 'custom' && !selectedPattern))) ||
+                  (selectedEntityType === 'other' && (!selectedCategory || !selectedEntity))
+                }
               >
-                Add Mech
+                Add Entity
               </button>
             </div>
           </div>
