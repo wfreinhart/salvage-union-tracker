@@ -2,10 +2,12 @@
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import Entity from './Entity';
+import MechBuilder from './MechBuilder';
 import mechChassisData from './data/chassisData.json';
 import otherEntitiesData from './data/otherEntities.json';
 
 const App = () => {
+  const [activeTab, setActiveTab] = useState('combat');
   const [entities, setEntities] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedEntityType, setSelectedEntityType] = useState('');
@@ -124,23 +126,43 @@ const App = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-xl font-bold mb-4">Salvage Union Character Tracker</h1>
-      <div className="flex flex-wrap -mx-1">
-        {entities.map((entity) => (
-          <Entity
-            key={entity.id}
-            entity={entity}
-            onUpdate={(updatedEntity) => updateEntity(entity.id, updatedEntity)}
-            onRemove={() => removeEntity(entity.id)}
-            onActed={() => handleEntityActed(entity.id)}
-            onToggleDisabled={() => toggleEntityDisabled(entity.id)}
-          />
-        ))}
+      
+      <div className="mb-4">
+        <button
+          onClick={() => setActiveTab('combat')}
+          className={`mr-2 p-2 ${activeTab === 'combat' ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
+        >
+          Combat Tracker
+        </button>
+        <button
+          onClick={() => setActiveTab('mechBuilder')}
+          className={`p-2 ${activeTab === 'mechBuilder' ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
+        >
+          Mech Builder
+        </button>
       </div>
-      <button onClick={() => setShowAddModal(true)} className="mt-4 p-2 bg-green-500 text-white rounded flex items-center text-sm">
-        <Plus size={16} className="mr-1" /> Add Entity
-      </button>
-  
-      {showAddModal && (
+
+      {activeTab === 'combat' && (
+        <>
+          <div className="flex flex-wrap -mx-1">
+            {entities.map((entity) => (
+              <Entity
+                key={entity.id}
+                entity={entity}
+                onUpdate={(updatedEntity) => updateEntity(entity.id, updatedEntity)}
+                onRemove={() => removeEntity(entity.id)}
+                onActed={() => handleEntityActed(entity.id)}
+                onToggleDisabled={() => toggleEntityDisabled(entity.id)}
+              />
+            ))}
+          </div>
+          <button onClick={() => setShowAddModal(true)} className="mt-4 p-2 bg-green-500 text-white rounded flex items-center text-sm">
+            <Plus size={16} className="mr-1" /> Add Entity
+          </button>
+
+          {/* ... rest of your existing combat tracker content ... */}
+
+          {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-4 rounded-lg max-w-lg w-full">
             <h2 className="text-lg font-bold mb-2">Add New Entity</h2>
@@ -260,6 +282,10 @@ const App = () => {
           </div>
         </div>
       )}
+        </>
+      )}
+
+      {activeTab === 'mechBuilder' && <MechBuilder />}
     </div>
   );
 }
