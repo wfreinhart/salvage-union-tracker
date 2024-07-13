@@ -111,30 +111,42 @@ const MechBuilder = ({ saveCustomMechPattern, customMechPatterns, deleteCustomMe
 
     useEffect(() => {
         if (selectedChassis) {
-            setCustomMech(prevMech => ({
-                ...prevMech,
-                sp: selectedChassis.stats.structure_pts,
-                maxSp: selectedChassis.stats.structure_pts,
-                ep: selectedChassis.stats.energy_pts,
-                maxEp: selectedChassis.stats.energy_pts,
-                heat: 0,
-                maxHeat: selectedChassis.stats.heat_cap,
-                systemSlots: selectedChassis.stats.system_slots,
-                moduleSlots: selectedChassis.stats.module_slots,
-                scrapByTL: {
-                    1: 0,
-                    2: 0,
-                    3: 0,
-                    4: 0,
-                    5: 0,
-                    6: 0,
-                    [selectedChassis.stats.tech_level]: selectedChassis.stats.salvage_value,
-                },
-                usedSystemSlots: 0,
-                usedModuleSlots: 0,
-                systems: [],
-                modules: [],
-            }));
+            setCustomMech(prevMech => {
+                // If systems and modules are already loaded, don't reset them
+                if (prevMech.systems.length > 0 || prevMech.modules.length > 0) {
+                    return {
+                        ...prevMech,
+                        sp: selectedChassis.stats.structure_pts,
+                        maxSp: selectedChassis.stats.structure_pts,
+                        ep: selectedChassis.stats.energy_pts,
+                        maxEp: selectedChassis.stats.energy_pts,
+                        heat: 0,
+                        maxHeat: selectedChassis.stats.heat_cap,
+                        systemSlots: selectedChassis.stats.system_slots,
+                        moduleSlots: selectedChassis.stats.module_slots,
+                    };
+                }
+                // Otherwise, reset everything
+                return {
+                    ...prevMech,
+                    sp: selectedChassis.stats.structure_pts,
+                    maxSp: selectedChassis.stats.structure_pts,
+                    ep: selectedChassis.stats.energy_pts,
+                    maxEp: selectedChassis.stats.energy_pts,
+                    heat: 0,
+                    maxHeat: selectedChassis.stats.heat_cap,
+                    systemSlots: selectedChassis.stats.system_slots,
+                    moduleSlots: selectedChassis.stats.module_slots,
+                    scrapByTL: {
+                        1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0,
+                        [selectedChassis.stats.tech_level]: selectedChassis.stats.salvage_value,
+                    },
+                    usedSystemSlots: 0,
+                    usedModuleSlots: 0,
+                    systems: [],
+                    modules: [],
+                };
+            });
         }
     }, [selectedChassis]);
 
@@ -248,28 +260,34 @@ const MechBuilder = ({ saveCustomMechPattern, customMechPatterns, deleteCustomMe
         alert("Custom mech pattern saved!");
     };
 
-    const loadCustomPattern = (pattern) => {
+      const loadCustomPattern = (pattern) => {
         const chassis = mechChassisData.mech_chassis.find(c => c.name === pattern.chassis);
         if (!chassis) {
             alert("Chassis not found for this pattern.");
             return;
         }
-
-        setSelectedChassis(chassis);
-        setCustomMech({
-            ...pattern,
-            systems: pattern.systems.map(systemName => {
-                const system = systemsData.systems[systemName];
-                return { name: systemName, ...system };
-            }),
-            modules: pattern.modules.map(moduleName => {
-                const module = modulesData.modules[moduleName];
-                return { name: moduleName, ...module };
-            }),
-            scrapByTL: calculateScrapByTL(chassis, pattern.systems, pattern.modules),
-            usedSystemSlots: pattern.systems.reduce((total, systemName) => total + systemsData.systems[systemName].slotsRequired, 0),
-            usedModuleSlots: pattern.modules.reduce((total, moduleName) => total + modulesData.modules[moduleName].slotsRequired, 0),
+    
+        const loadedSystems = pattern.systems.map(systemName => {
+            const system = systemsData.systems[systemName];
+            return { name: systemName, ...system };
         });
+    
+        const loadedModules = pattern.modules.map(moduleName => {
+            const module = modulesData.modules[moduleName];
+            return { name: moduleName, ...module };
+        });
+    
+        const newCustomMech = {
+            ...pattern,
+            systems: loadedSystems,
+            modules: loadedModules,
+            scrapByTL: calculateScrapByTL(chassis, loadedSystems, loadedModules),
+            usedSystemSlots: loadedSystems.reduce((total, system) => total + system.slotsRequired, 0),
+            usedModuleSlots: loadedModules.reduce((total, module) => total + module.slotsRequired, 0),
+        };
+    
+        setSelectedChassis(chassis);
+        setCustomMech(newCustomMech);
         setShowPatternMenu(false);
     };
 
@@ -279,13 +297,11 @@ const MechBuilder = ({ saveCustomMechPattern, customMechPatterns, deleteCustomMe
             [chassis.stats.tech_level]: chassis.stats.salvage_value
         };
 
-        systems.forEach(systemName => {
-            const system = systemsData.systems[systemName];
+        systems.forEach(system => {
             scrapByTL[system.techLevel] += system.salvageValue;
         });
 
-        modules.forEach(moduleName => {
-            const module = modulesData.modules[moduleName];
+        modules.forEach(module => {
             scrapByTL[module.techLevel] += module.salvageValue;
         });
 
@@ -340,34 +356,34 @@ const MechBuilder = ({ saveCustomMechPattern, customMechPatterns, deleteCustomMe
             </div>
 
             {showChassisSelection && (
-                    <div className="mt-2 grid grid-cols-4 gap-2">
-                        {mechChassisData.mech_chassis.map((chassis) => (
-                            <button
-                                key={chassis.name}
-                                onClick={() => {
-                                    setSelectedChassis(chassis);
-                                    setShowChassisSelection(false);
-                                }}
-                                className="p-2 bg-gray-200 hover:bg-gray-300 rounded"
-                            >
-                                {chassis.name}
-                            </button>
-                        ))}
-                    </div>
-                )}
-                {showPatternMenu && (
                 <div className="mt-2 grid grid-cols-4 gap-2">
-                    {customMechPatterns.map((pattern) => (
+                    {mechChassisData.mech_chassis.map((chassis) => (
                         <button
-                            key={pattern.name}
-                            onClick={() => loadCustomPattern(pattern)}
+                            key={chassis.name}
+                            onClick={() => {
+                                setSelectedChassis(chassis);
+                                setShowChassisSelection(false);
+                            }}
                             className="p-2 bg-gray-200 hover:bg-gray-300 rounded"
                         >
-                            {pattern.name}
+                            {chassis.name}
                         </button>
                     ))}
                 </div>
             )}
+            {showPatternMenu && (
+  <div className="mt-2 grid grid-cols-4 gap-2">
+    {customMechPatterns.map((pattern) => (
+      <button
+        key={pattern.name}
+        onClick={() => loadCustomPattern(pattern)}
+        className="p-2 bg-gray-200 hover:bg-gray-300 rounded"
+      >
+        {pattern.name}
+      </button>
+    ))}
+  </div>
+)}
 
             {selectedChassis && (
                 <Card className="mb-4">
