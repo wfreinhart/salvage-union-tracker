@@ -36,14 +36,14 @@ const Pilot = ({ pilot, onUpdate, onRemove }) => (
 );
 
 const EntityComponent = ({ item, type, onConditionChange }) => {
-  const [condition, setCondition] = useState('normal');
+  const condition = item.condition || 'normal';
+  const name = typeof item === 'string' ? item : item.name;
 
   const cycleCondition = () => {
     const conditions = ['normal', 'damaged', 'destroyed'];
     const currentIndex = conditions.indexOf(condition);
     const nextCondition = conditions[(currentIndex + 1) % conditions.length];
-    setCondition(nextCondition);
-    onConditionChange(item.name || item, nextCondition);
+    onConditionChange(nextCondition);
   };
 
   const getCardColor = () => {
@@ -100,7 +100,7 @@ const EntityComponent = ({ item, type, onConditionChange }) => {
     <Card className={`mb-1 ${getCardColor()}`}>
       <CardContent className="p-2 text-sm flex justify-between items-center">
         <Tooltip content={renderTooltipContent()}>
-          {item.name || item}
+          {name}
         </Tooltip>
         <AlertCircle
           size={18}
@@ -112,7 +112,7 @@ const EntityComponent = ({ item, type, onConditionChange }) => {
   );
 };
 
-const Entity = ({ entity, onUpdate, onRemove, onActed, onToggleDisabled }) => {
+const Entity = ({ entity, onUpdate, onUpdateComponent, onRemove, onActed, onToggleDisabled }) => {
   const [showDetails, setShowDetails] = useState(false);
 
   const updateEntityField = (field, value) => {
@@ -230,7 +230,7 @@ const Entity = ({ entity, onUpdate, onRemove, onActed, onToggleDisabled }) => {
                     key={index}
                     item={system}
                     type="system"
-                    onConditionChange={(name, condition) => handleConditionChange('systems', index, condition)}
+                    onConditionChange={(condition) => handleConditionChange('systems', index, condition)}
                   />
                 ))}
               </>
@@ -244,7 +244,7 @@ const Entity = ({ entity, onUpdate, onRemove, onActed, onToggleDisabled }) => {
                     key={index}
                     item={module}
                     type="module"
-                    onConditionChange={(name, condition) => handleConditionChange('modules', index, condition)}
+                    onConditionChange={(condition) => handleConditionChange('modules', index, condition)}
                   />
                 ))}
               </>
@@ -258,11 +258,12 @@ const Entity = ({ entity, onUpdate, onRemove, onActed, onToggleDisabled }) => {
                     key={index}
                     item={ability}
                     type="ability"
-                    onConditionChange={(name, condition) => handleConditionChange('abilities', index, condition)}
+                    onConditionChange={(condition) => handleConditionChange('abilities', index, condition)}
                   />
                 ))}
               </>
             )}
+
           </>
         )}
       </CardContent>
