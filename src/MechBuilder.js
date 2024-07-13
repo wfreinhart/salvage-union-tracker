@@ -260,23 +260,47 @@ const MechBuilder = ({ saveCustomMechPattern, customMechPatterns, deleteCustomMe
         alert("Custom mech pattern saved!");
     };
 
-      const loadCustomPattern = (pattern) => {
+    const handleClearMech = () => {
+        if (window.confirm("Are you sure you want to clear the current mech? This action cannot be undone.")) {
+            setCustomMech({
+                name: 'Custom Mech',
+                systems: [],
+                modules: [],
+                usedSystemSlots: 0,
+                usedModuleSlots: 0,
+                scrapByTL: {
+                    1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0,
+                },
+                sp: 0,
+                maxSp: 0,
+                ep: 0,
+                maxEp: 0,
+                heat: 0,
+                maxHeat: 0,
+                systemSlots: 0,
+                moduleSlots: 0,
+            });
+            setSelectedChassis(null);
+        }
+    };
+
+    const loadCustomPattern = (pattern) => {
         const chassis = mechChassisData.mech_chassis.find(c => c.name === pattern.chassis);
         if (!chassis) {
             alert("Chassis not found for this pattern.");
             return;
         }
-    
+
         const loadedSystems = pattern.systems.map(systemName => {
             const system = systemsData.systems[systemName];
             return { name: systemName, ...system };
         });
-    
+
         const loadedModules = pattern.modules.map(moduleName => {
             const module = modulesData.modules[moduleName];
             return { name: moduleName, ...module };
         });
-    
+
         const newCustomMech = {
             ...pattern,
             systems: loadedSystems,
@@ -285,7 +309,7 @@ const MechBuilder = ({ saveCustomMechPattern, customMechPatterns, deleteCustomMe
             usedSystemSlots: loadedSystems.reduce((total, system) => total + system.slotsRequired, 0),
             usedModuleSlots: loadedModules.reduce((total, module) => total + module.slotsRequired, 0),
         };
-    
+
         setSelectedChassis(chassis);
         setCustomMech(newCustomMech);
         setShowPatternMenu(false);
@@ -372,18 +396,18 @@ const MechBuilder = ({ saveCustomMechPattern, customMechPatterns, deleteCustomMe
                 </div>
             )}
             {showPatternMenu && (
-  <div className="mt-2 grid grid-cols-4 gap-2">
-    {customMechPatterns.map((pattern) => (
-      <button
-        key={pattern.name}
-        onClick={() => loadCustomPattern(pattern)}
-        className="p-2 bg-gray-200 hover:bg-gray-300 rounded"
-      >
-        {pattern.name}
-      </button>
-    ))}
-  </div>
-)}
+                <div className="mt-2 grid grid-cols-4 gap-2">
+                    {customMechPatterns.map((pattern) => (
+                        <button
+                            key={pattern.name}
+                            onClick={() => loadCustomPattern(pattern)}
+                            className="p-2 bg-gray-200 hover:bg-gray-300 rounded"
+                        >
+                            {pattern.name}
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {selectedChassis && (
                 <Card className="mb-4">
@@ -404,6 +428,12 @@ const MechBuilder = ({ saveCustomMechPattern, customMechPatterns, deleteCustomMe
                                 className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
                             >
                                 Delete Custom Pattern
+                            </button>
+                            <button
+                                onClick={handleClearMech}
+                                className="p-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                            >
+                                Clear Mech
                             </button>
                         </div>
                     </CardHeader>

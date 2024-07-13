@@ -6,11 +6,11 @@ import mechChassisData from './data/chassisData.json';
 import otherEntitiesData from './data/otherEntities.json';
 
 const groupColors = [
-  'bg-white',
-  'bg-red-100',
-  'bg-blue-100',
-  'bg-green-100',
-  'bg-yellow-100',
+    'bg-white',
+    'bg-red-100',
+    'bg-blue-100',
+    'bg-green-100',
+    'bg-yellow-100',
 ];
 
 const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
@@ -24,14 +24,14 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
 
     const changeEntityGroupColor = (id) => {
         setEntities(entities.map(entity => {
-          if (entity.id === id) {
-            const currentColorIndex = groupColors.indexOf(entity.groupColor || 'bg-white');
-            const nextColorIndex = (currentColorIndex + 1) % groupColors.length;
-            return { ...entity, groupColor: groupColors[nextColorIndex] };
-          }
-          return entity;
+            if (entity.id === id) {
+                const currentColorIndex = groupColors.indexOf(entity.groupColor || 'bg-white');
+                const nextColorIndex = (currentColorIndex + 1) % groupColors.length;
+                return { ...entity, groupColor: groupColors[nextColorIndex] };
+            }
+            return entity;
         }));
-      };
+    };
 
     const addEntity = () => {
         let newEntity;
@@ -41,6 +41,7 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
                 newEntity = {
                     id: Date.now(),
                     ...customPattern,
+                    patternId: customPattern.id, // Store the pattern ID
                     pilots: [],
                     hasActed: false,
                     isDisabled: false,
@@ -90,6 +91,33 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
         resetSelections();
     };
 
+    const duplicateEntity = (entityToDuplicate) => {
+        const baseName = entityToDuplicate.name.replace(/\s*\(\d+\)$/, '');
+        const existingCopies = entities.filter(e => e.name.startsWith(baseName));
+        let newNumber = existingCopies.length + 1;
+
+        // Find the next available number
+        const usedNumbers = new Set(
+            existingCopies
+                .map(e => {
+                    const match = e.name.match(/\((\d+)\)$/);
+                    return match ? parseInt(match[1], 10) : 0;
+                })
+                .filter(n => n > 0)
+        );
+
+        while (usedNumbers.has(newNumber)) {
+            newNumber++;
+        }
+
+        const newEntity = {
+            ...entityToDuplicate,
+            id: Date.now(), // Ensure a new unique ID
+            name: `${baseName} (${newNumber})`
+        };
+        setEntities([...entities, newEntity]);
+    };
+
     const resetSelections = () => {
         setSelectedEntityType('');
         setSelectedChassis('');
@@ -114,7 +142,7 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
     };
 
     const updateEntity = (id, updatedProperties) => {
-        setEntities(entities.map(entity => 
+        setEntities(entities.map(entity =>
             entity.id === id ? { ...entity, ...updatedProperties } : entity
         ));
     };
@@ -122,7 +150,7 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
     const updateEntityComponent = (entityId, componentType, componentIndex, updatedProperties) => {
         setEntities(entities.map(entity => {
             if (entity.id === entityId) {
-                const updatedComponents = entity[componentType].map((component, index) => 
+                const updatedComponents = entity[componentType].map((component, index) =>
                     index === componentIndex ? { ...component, ...updatedProperties } : component
                 );
                 return { ...entity, [componentType]: updatedComponents };
@@ -156,21 +184,22 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
 
     return (
         <>
-          <div className="flex flex-wrap -mx-1">
-            {entities.map((entity) => (
-              <Entity
-                key={entity.id}
-                entity={entity}
-                onUpdate={(updatedProperties) => updateEntity(entity.id, updatedProperties)}
-                onUpdateComponent={(componentType, componentIndex, updatedProperties) => 
-                  updateEntityComponent(entity.id, componentType, componentIndex, updatedProperties)}
-                onRemove={() => removeEntity(entity.id)}
-                onActed={() => handleEntityActed(entity.id)}
-                onToggleDisabled={() => toggleEntityDisabled(entity.id)}
-                onChangeGroupColor={() => changeEntityGroupColor(entity.id)}
-              />
-            ))}
-          </div>
+            <div className="flex flex-wrap -mx-1">
+                {entities.map((entity) => (
+                    <Entity
+                        key={entity.id}
+                        entity={entity}
+                        onUpdate={(updatedProperties) => updateEntity(entity.id, updatedProperties)}
+                        onUpdateComponent={(componentType, componentIndex, updatedProperties) =>
+                            updateEntityComponent(entity.id, componentType, componentIndex, updatedProperties)}
+                        onRemove={() => removeEntity(entity.id)}
+                        onActed={() => handleEntityActed(entity.id)}
+                        onToggleDisabled={() => toggleEntityDisabled(entity.id)}
+                        onChangeGroupColor={() => changeEntityGroupColor(entity.id)}
+                        onDuplicate={duplicateEntity}
+                    />
+                ))}
+            </div>
             <button onClick={() => setShowAddModal(true)} className="mt-4 p-2 bg-green-500 text-white rounded flex items-center text-sm">
                 <Plus size={16} className="mr-1" /> Add Entity
             </button>

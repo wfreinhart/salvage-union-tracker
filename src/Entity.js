@@ -1,7 +1,7 @@
 // Entity.js
 import React, { useState } from 'react';
 import { Card, CardHeader, CardContent } from './components/ui/card.tsx';
-import { AlertCircle, Check, X, ToggleLeft, ToggleRight, ChevronDown, ChevronUp, Trash2, Plus, Palette } from 'lucide-react';
+import { AlertCircle, Check, Copy, X, ToggleLeft, ToggleRight, ChevronDown, ChevronUp, Trash2, Plus, Palette } from 'lucide-react';
 import { EditableText, StatCounter } from './components/CommonComponents';
 import Tooltip from './components/Tooltip';
 import systemsData from './data/systems.json';
@@ -97,7 +97,7 @@ const EntityComponent = ({ item, type, onConditionChange }) => {
   };
 
   return (
-    <Card className={`mb-1 ${getCardColor()}`}>
+    <Card className={`mb-1 ${getCardColor()} bg-white`}>
       <CardContent className="p-2 text-sm flex justify-between items-center">
         <Tooltip content={renderTooltipContent()}>
           {name}
@@ -112,7 +112,7 @@ const EntityComponent = ({ item, type, onConditionChange }) => {
   );
 };
 
-const Entity = ({ entity, onUpdate, onUpdateComponent, onRemove, onActed, onToggleDisabled, onChangeGroupColor }) => {
+const Entity = ({ entity, onUpdate, onUpdateComponent, onRemove, onActed, onToggleDisabled, onChangeGroupColor, onDuplicate }) => {
   const [showDetails, setShowDetails] = useState(false);
 
   const updateEntityField = (field, value) => {
@@ -164,6 +164,9 @@ const Entity = ({ entity, onUpdate, onUpdateComponent, onRemove, onActed, onTogg
           </button>
           <button onClick={() => onChangeGroupColor(entity.id)} className="p-1 mr-2">
             <Palette size={14} />
+          </button>
+          <button onClick={() => onDuplicate(entity)} className="p-1 mr-2">
+            <Copy size={14} />
           </button>
           <button onClick={onRemove} className="p-1"><Trash2 size={14} /></button>
         </div>

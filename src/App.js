@@ -18,6 +18,33 @@ const App = () => {
     return savedPatterns ? JSON.parse(savedPatterns) : [];
   });
 
+  // Add this useEffect to persist customMechPatterns
+  useEffect(() => {
+    localStorage.setItem('customMechPatterns', JSON.stringify(customMechPatterns));
+  }, [customMechPatterns]);
+
+  // Modify the saveCustomMechPattern function
+  const saveCustomMechPattern = (mechPattern) => {
+    setCustomMechPatterns(prevPatterns => {
+      const existingPatternIndex = prevPatterns.findIndex(p => p.name === mechPattern.name);
+      if (existingPatternIndex !== -1) {
+        // Update existing pattern
+        const updatedPatterns = [...prevPatterns];
+        updatedPatterns[existingPatternIndex] = {
+          ...updatedPatterns[existingPatternIndex],
+          ...mechPattern,
+          id: updatedPatterns[existingPatternIndex].id // Preserve the original ID
+        };
+        updateCombatEntitiesFromPattern(updatedPatterns[existingPatternIndex]);
+        return updatedPatterns;
+      } else {
+        // Add new pattern
+        const newPattern = { ...mechPattern, id: Date.now().toString() };
+        return [...prevPatterns, newPattern];
+      }
+    });
+  };
+
   // Handle activeTab persistence
   useEffect(() => {
     localStorage.setItem('activeTab', activeTab);
@@ -33,23 +60,28 @@ const App = () => {
     localStorage.setItem('customMechPatterns', JSON.stringify(customMechPatterns));
   }, [customMechPatterns]);
 
-  const saveCustomMechPattern = (mechPattern) => {
-    setCustomMechPatterns(prevPatterns => {
-      const index = prevPatterns.findIndex(p => p.name === mechPattern.name);
-      if (index !== -1) {
-        // Update existing pattern
-        const newPatterns = [...prevPatterns];
-        newPatterns[index] = mechPattern;
-        return newPatterns;
-      } else {
-        // Add new pattern
-        return [...prevPatterns, mechPattern];
-      }
-    });
-  };
-
   const deleteCustomMechPattern = (patternName) => {
     setCustomMechPatterns(prevPatterns => prevPatterns.filter(p => p.name !== patternName));
+  };
+
+  const updateCombatEntitiesFromPattern = (updatedPattern) => {
+    setCombatEntities(prevEntities =>
+      prevEntities.map(entity => {
+        if (entity.patternId === updatedPattern.id) {
+          return {
+            ...entity,
+            ...updatedPattern,
+            id: entity.id, // Preserve the entity's unique ID
+            pilots: entity.pilots,
+            hasActed: entity.hasActed,
+            isDisabled: entity.isDisabled,
+            groupColor: entity.groupColor,
+            type: entity.type
+          };
+        }
+        return entity;
+      })
+    );
   };
 
   return (
@@ -72,7 +104,7 @@ const App = () => {
       </div>
 
       {activeTab === 'combat' && (
-        <CombatTracker 
+        <CombatTracker
           customMechPatterns={customMechPatterns}
           entities={combatEntities}
           setEntities={setCombatEntities}
@@ -84,6 +116,7 @@ const App = () => {
           saveCustomMechPattern={saveCustomMechPattern}
           customMechPatterns={customMechPatterns}
           deleteCustomMechPattern={deleteCustomMechPattern}
+          updateCombatEntitiesFromPattern={updateCombatEntitiesFromPattern}
         />
       )}
     </div>
