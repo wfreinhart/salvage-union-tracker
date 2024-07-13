@@ -1,7 +1,7 @@
 // Entity.js
 import React, { useState } from 'react';
 import { Card, CardHeader, CardContent } from './components/ui/card.tsx';
-import { AlertCircle, Check, X, ToggleLeft, ToggleRight, ChevronDown, ChevronUp, Trash2, Plus } from 'lucide-react';
+import { AlertCircle, Check, X, ToggleLeft, ToggleRight, ChevronDown, ChevronUp, Trash2, Plus, Palette } from 'lucide-react';
 import { EditableText, StatCounter } from './components/CommonComponents';
 import Tooltip from './components/Tooltip';
 import systemsData from './data/systems.json';
@@ -112,7 +112,7 @@ const EntityComponent = ({ item, type, onConditionChange }) => {
   );
 };
 
-const Entity = ({ entity, onUpdate, onUpdateComponent, onRemove, onActed, onToggleDisabled }) => {
+const Entity = ({ entity, onUpdate, onUpdateComponent, onRemove, onActed, onToggleDisabled, onChangeGroupColor }) => {
   const [showDetails, setShowDetails] = useState(false);
 
   const updateEntityField = (field, value) => {
@@ -146,7 +146,7 @@ const Entity = ({ entity, onUpdate, onUpdateComponent, onRemove, onActed, onTogg
   };
 
   return (
-    <Card className="mb-4 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 inline-block align-top mr-2">
+    <Card className={`mb-4 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 inline-block align-top mr-2 ${entity.groupColor}`}>
       <CardHeader className="p-2 flex justify-between items-center">
         <EditableText
           value={entity.name}
@@ -161,6 +161,9 @@ const Entity = ({ entity, onUpdate, onUpdateComponent, onRemove, onActed, onTogg
           </button>
           <button onClick={() => setShowDetails(!showDetails)} className="p-1 mr-2">
             {showDetails ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
+          <button onClick={() => onChangeGroupColor(entity.id)} className="p-1 mr-2">
+            <Palette size={14} />
           </button>
           <button onClick={onRemove} className="p-1"><Trash2 size={14} /></button>
         </div>

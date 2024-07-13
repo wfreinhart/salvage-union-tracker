@@ -5,6 +5,14 @@ import Entity from './Entity';
 import mechChassisData from './data/chassisData.json';
 import otherEntitiesData from './data/otherEntities.json';
 
+const groupColors = [
+  'bg-white',
+  'bg-red-100',
+  'bg-blue-100',
+  'bg-green-100',
+  'bg-yellow-100',
+];
+
 const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedEntityType, setSelectedEntityType] = useState('');
@@ -13,6 +21,17 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedEntity, setSelectedEntity] = useState('');
     const [availablePatterns, setAvailablePatterns] = useState([]);
+
+    const changeEntityGroupColor = (id) => {
+        setEntities(entities.map(entity => {
+          if (entity.id === id) {
+            const currentColorIndex = groupColors.indexOf(entity.groupColor || 'bg-white');
+            const nextColorIndex = (currentColorIndex + 1) % groupColors.length;
+            return { ...entity, groupColor: groupColors[nextColorIndex] };
+          }
+          return entity;
+        }));
+      };
 
     const addEntity = () => {
         let newEntity;
@@ -25,7 +44,8 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
                     pilots: [],
                     hasActed: false,
                     isDisabled: false,
-                    type: 'mech'
+                    type: 'mech',
+                    groupColor: 'bg-white'
                 };
             } else {
                 const chassisData = mechChassisData.mech_chassis.find(mech => mech.name === selectedChassis);
@@ -44,7 +64,8 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
                     modules: patternData.modules,
                     hasActed: false,
                     isDisabled: false,
-                    type: 'mech'
+                    type: 'mech',
+                    groupColor: 'bg-white'
                 };
             }
         } else {
@@ -60,7 +81,8 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
                 maxHp: entityData.hp,
                 hasActed: false,
                 isDisabled: false,
-                type: 'other'
+                type: 'other',
+                groupColor: 'bg-white'
             };
         }
         setEntities([...entities, newEntity]);
@@ -134,20 +156,21 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
 
     return (
         <>
-            <div className="flex flex-wrap -mx-1">
-                {entities.map((entity) => (
-                    <Entity
-                        key={entity.id}
-                        entity={entity}
-                        onUpdate={(updatedProperties) => updateEntity(entity.id, updatedProperties)}
-                        onUpdateComponent={(componentType, componentIndex, updatedProperties) => 
-                            updateEntityComponent(entity.id, componentType, componentIndex, updatedProperties)}
-                        onRemove={() => removeEntity(entity.id)}
-                        onActed={() => handleEntityActed(entity.id)}
-                        onToggleDisabled={() => toggleEntityDisabled(entity.id)}
-                    />
-                ))}
-            </div>
+          <div className="flex flex-wrap -mx-1">
+            {entities.map((entity) => (
+              <Entity
+                key={entity.id}
+                entity={entity}
+                onUpdate={(updatedProperties) => updateEntity(entity.id, updatedProperties)}
+                onUpdateComponent={(componentType, componentIndex, updatedProperties) => 
+                  updateEntityComponent(entity.id, componentType, componentIndex, updatedProperties)}
+                onRemove={() => removeEntity(entity.id)}
+                onActed={() => handleEntityActed(entity.id)}
+                onToggleDisabled={() => toggleEntityDisabled(entity.id)}
+                onChangeGroupColor={() => changeEntityGroupColor(entity.id)}
+              />
+            ))}
+          </div>
             <button onClick={() => setShowAddModal(true)} className="mt-4 p-2 bg-green-500 text-white rounded flex items-center text-sm">
                 <Plus size={16} className="mr-1" /> Add Entity
             </button>
