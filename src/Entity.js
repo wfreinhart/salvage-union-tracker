@@ -76,6 +76,16 @@ const EntityComponent = ({ item, type, onConditionChange }) => {
           {item.range && <p><span className="font-bold">Range:</span> {item.range}</p>}
           {item.damage && <p><span className="font-bold">Damage:</span> {item.damage}</p>}
           {item.traits && <p><span className="font-bold">Traits:</span> {item.traits.join(', ')}</p>}
+          {item.options && item.options.length > 0 && (
+          <>
+            <p className="font-bold">Options:</p>
+            {item.options.map((option, index) => (
+              <div key={index} className="ml-2">
+                <p>{option}</p>
+              </div>
+            ))}
+          </>
+        )}
         </div>
       );
     } else {
