@@ -1,5 +1,5 @@
 // CombatTracker.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import Entity from './Entity';
 import mechChassisData from './data/chassisData.json';
@@ -16,11 +16,25 @@ const groupColors = [
 const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedEntityType, setSelectedEntityType] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedChassis, setSelectedChassis] = useState('');
     const [selectedPattern, setSelectedPattern] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedEntity, setSelectedEntity] = useState('');
     const [availablePatterns, setAvailablePatterns] = useState([]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            // Sort entities after a delay
+            const sortedEntities = [...entities].sort((a, b) => {
+                const colorComparison = groupColors.indexOf(a.groupColor) - groupColors.indexOf(b.groupColor);
+                if (colorComparison !== 0) return colorComparison;
+                return a.name.localeCompare(b.name);
+            });
+            setEntities(sortedEntities);
+        }, 1500); // 1500 ms delay
+
+        return () => clearTimeout(timer); // Cleanup timer on unmount or entities change
+    }, [entities, setEntities]);
 
     const changeEntityGroupColor = (id) => {
         setEntities(entities.map(entity => {
@@ -39,20 +53,21 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
             if (selectedChassis === 'custom') {
                 const customPattern = customMechPatterns.find(pattern => pattern.name === selectedPattern);
                 newEntity = {
-                    id: Date.now(),
+                    id: Date.now().toString(),
                     ...customPattern,
                     patternId: customPattern.id, // Store the pattern ID
                     pilots: [],
                     hasActed: false,
                     isDisabled: false,
                     type: 'mech',
-                    groupColor: 'bg-white'
+                    groupColor: 'bg-white',
+                    position: { x: Math.floor(Math.random() * 700) + 50, y: Math.floor(Math.random() * 500) + 50 },
                 };
             } else {
                 const chassisData = mechChassisData.mech_chassis.find(mech => mech.name === selectedChassis);
                 const patternData = chassisData.patterns.find(pattern => pattern.name === selectedPattern);
                 newEntity = {
-                    id: Date.now(),
+                    id: Date.now().toString(),
                     name: `${selectedChassis} - ${selectedPattern}`,
                     sp: chassisData.stats.structure_pts,
                     maxSp: chassisData.stats.structure_pts,
@@ -66,16 +81,17 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
                     hasActed: false,
                     isDisabled: false,
                     type: 'mech',
-                    groupColor: 'bg-white'
+                    groupColor: 'bg-white',
+                    position: { x: Math.floor(Math.random() * 700) + 50, y: Math.floor(Math.random() * 500) + 50 },
                 };
             }
         } else {
-            const categoryData = otherEntitiesData.other_entities.find(cat => cat.category === selectedCategory);
+            const categoryData = otherEntitiesData.other_entities.find(cat => cat.category === selectedEntityType);
             const entityData = categoryData.entities.find(ent => ent.name === selectedEntity);
             newEntity = {
-                id: Date.now(),
+                id: Date.now().toString(),
                 ...entityData,
-                category: selectedCategory,
+                category: selectedEntityType,
                 sp: entityData.structure_pts,
                 maxSp: entityData.structure_pts,
                 hp: entityData.hp,
@@ -83,7 +99,8 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
                 hasActed: false,
                 isDisabled: false,
                 type: 'other',
-                groupColor: 'bg-white'
+                groupColor: 'bg-white',
+                position: { x: Math.floor(Math.random() * 700) + 50, y: Math.floor(Math.random() * 500) + 50 },
             };
         }
         setEntities([...entities, newEntity]);
@@ -112,8 +129,12 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
 
         const newEntity = {
             ...entityToDuplicate,
-            id: Date.now(), // Ensure a new unique ID
-            name: `${baseName} (${newNumber})`
+            id: Date.now().toString(), // Ensure a new unique ID
+            name: `${baseName} (${newNumber})`,
+            position: {
+                x: Math.floor(Math.random() * 700) + 50, // Random x between 50 and 750
+                y: Math.floor(Math.random() * 500) + 50  // Random y between 50 and 550
+            }
         };
         setEntities([...entities, newEntity]);
     };
@@ -122,7 +143,6 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
         setSelectedEntityType('');
         setSelectedChassis('');
         setSelectedPattern('');
-        setSelectedCategory('');
         setSelectedEntity('');
     };
 
@@ -184,22 +204,30 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
 
     return (
         <>
-            <div className="flex flex-wrap -mx-1">
-                {entities.map((entity) => (
-                    <Entity
+            <div style={{ display: 'flex', flexWrap: 'wrap', minHeight: '100px' }}>
+                {entities.map((entity, index) => (
+                    <div
                         key={entity.id}
-                        entity={entity}
-                        onUpdate={(updatedProperties) => updateEntity(entity.id, updatedProperties)}
-                        onUpdateComponent={(componentType, componentIndex, updatedProperties) =>
-                            updateEntityComponent(entity.id, componentType, componentIndex, updatedProperties)}
-                        onRemove={() => removeEntity(entity.id)}
-                        onActed={() => handleEntityActed(entity.id)}
-                        onToggleDisabled={() => toggleEntityDisabled(entity.id)}
-                        onChangeGroupColor={() => changeEntityGroupColor(entity.id)}
-                        onDuplicate={duplicateEntity}
-                    />
+                        style={{
+                            width: 'calc(25% - 1rem)',
+                            margin: '0.5rem',
+                        }}
+                    >
+                        <Entity
+                            entity={entity}
+                            onUpdate={(updatedProperties) => updateEntity(entity.id, updatedProperties)}
+                            onUpdateComponent={(componentType, componentIndex, updatedProperties) =>
+                                updateEntityComponent(entity.id, componentType, componentIndex, updatedProperties)}
+                            onRemove={() => removeEntity(entity.id)}
+                            onActed={() => handleEntityActed(entity.id)}
+                            onToggleDisabled={() => toggleEntityDisabled(entity.id)}
+                            onChangeGroupColor={() => changeEntityGroupColor(entity.id)}
+                            onDuplicate={duplicateEntity}
+                        />
+                    </div>
                 ))}
             </div>
+
             <button onClick={() => setShowAddModal(true)} className="mt-4 p-2 bg-green-500 text-white rounded flex items-center text-sm">
                 <Plus size={16} className="mr-1" /> Add Entity
             </button>
@@ -208,22 +236,34 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                     <div className="bg-white p-4 rounded-lg max-w-lg w-full">
                         <h2 className="text-lg font-bold mb-2">Add New Entity</h2>
-                        <div className="mb-4">
+                        <div className="mb-4 grid grid-cols-3 gap-2">
                             <button
-                                onClick={() => setSelectedEntityType('mech')}
-                                className={`mr-2 p-2 ${selectedEntityType === 'mech' ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
+                                onClick={() => {
+                                    setSelectedEntityType('Mechs');
+                                    setSelectedCategory('');
+                                }}
+                                className={`p-2 ${selectedEntityType === 'Mechs' ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
                             >
-                                Mech
+                                Mechs
                             </button>
-                            <button
-                                onClick={() => setSelectedEntityType('other')}
-                                className={`p-2 ${selectedEntityType === 'other' ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
-                            >
-                                Other Entity
-                            </button>
+                            {otherEntitiesData.other_entities.map((category) => (
+                                <button
+                                    key={category.category}
+                                    onClick={() => {
+                                        setSelectedEntityType(category.category);
+                                        setSelectedCategory(category.category);
+                                        setSelectedChassis('');
+                                        setSelectedPattern('');
+                                        setSelectedEntity('');
+                                    }}
+                                    className={`p-2 ${selectedEntityType === category.category ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
+                                >
+                                    {category.category}
+                                </button>
+                            ))}
                         </div>
 
-                        {selectedEntityType === 'mech' && (
+                        {selectedEntityType === 'Mechs' && (
                             <>
                                 <h3 className="font-bold mb-2">Select Chassis:</h3>
                                 <div className="grid grid-cols-4 gap-2 mb-4">
@@ -279,44 +319,23 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
                                 )}
                             </>
                         )}
-
-                        {selectedEntityType === 'other' && (
+                        {selectedCategory && selectedCategory !== 'Mechs' && (
                             <>
-                                <h3 className="font-bold mb-2">Select Category:</h3>
+                                <h3 className="font-bold mb-2">Select Entity:</h3>
                                 <div className="grid grid-cols-2 gap-2 mb-4">
-                                    {otherEntitiesData.other_entities.map((category) => (
-                                        <button
-                                            key={category.category}
-                                            onClick={() => {
-                                                setSelectedCategory(category.category);
-                                                setSelectedEntity('');
-                                            }}
-                                            className={`p-2 ${selectedCategory === category.category ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
-                                        >
-                                            {category.category}
-                                        </button>
-                                    ))}
+                                    {otherEntitiesData.other_entities
+                                        .find(cat => cat.category === selectedCategory)
+                                        ?.entities.map((entity) => (
+                                            <button
+                                                key={entity.name}
+                                                onClick={() => setSelectedEntity(entity.name)}
+                                                className={`p-2 ${selectedEntity === entity.name ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
+                                            >
+                                                {entity.name}
+                                            </button>
+                                        ))
+                                    }
                                 </div>
-
-                                {selectedCategory && (
-                                    <>
-                                        <h3 className="font-bold mb-2">Select Entity:</h3>
-                                        <div className="grid grid-cols-2 gap-2 mb-4">
-                                            {otherEntitiesData.other_entities
-                                                .find(cat => cat.category === selectedCategory)
-                                                ?.entities.map((entity) => (
-                                                    <button
-                                                        key={entity.name}
-                                                        onClick={() => setSelectedEntity(entity.name)}
-                                                        className={`p-2 ${selectedEntity === entity.name ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
-                                                    >
-                                                        {entity.name}
-                                                    </button>
-                                                ))
-                                            }
-                                        </div>
-                                    </>
-                                )}
                             </>
                         )}
 
@@ -331,8 +350,8 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
                                 onClick={addEntity}
                                 className="p-2 bg-blue-500 text-white rounded"
                                 disabled={
-                                    (selectedEntityType === 'mech' && (!selectedChassis || (selectedChassis !== 'custom' && !selectedPattern))) ||
-                                    (selectedEntityType === 'other' && (!selectedCategory || !selectedEntity))
+                                    (selectedEntityType === 'Mechs' && (!selectedChassis || (selectedChassis !== 'custom' && !selectedPattern))) ||
+                                    (selectedEntityType !== 'Mechs' && !selectedEntity)
                                 }
                             >
                                 Add Entity

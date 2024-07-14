@@ -145,8 +145,9 @@ const Entity = ({ entity, onUpdate, onUpdateComponent, onRemove, onActed, onTogg
     onUpdate({ ...entity, [type]: updatedItems });
   };
 
+
   return (
-    <Card className={`mb-4 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 inline-block align-top mr-2 ${entity.groupColor}`}>
+    <Card className={`${entity.groupColor} h-full`}>
       <CardHeader className="p-2 flex justify-between items-center">
         <EditableText
           value={entity.name}
@@ -226,7 +227,6 @@ const Entity = ({ entity, onUpdate, onUpdateComponent, onRemove, onActed, onTogg
                 </button>
               </>
             )}
-
 
             {entity.systems && entity.systems.length > 0 && (
               <>

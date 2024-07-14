@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import CombatTracker from './CombatTracker';
 import MechBuilder from './MechBuilder';
+import CombatMap from './CombatMap';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState(() => {
@@ -84,6 +85,16 @@ const App = () => {
     );
   };
 
+  const updateEntityPosition = (id, x, y) => {
+    setCombatEntities(prevEntities =>
+      prevEntities.map(entity =>
+        entity.id === id
+          ? { ...entity, position: { x, y } }
+          : entity
+      )
+    );
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-xl font-bold mb-4">Salvage Union Character Tracker</h1>
@@ -96,8 +107,14 @@ const App = () => {
           Combat Tracker
         </button>
         <button
+          onClick={() => setActiveTab('map')}
+          className={`mr-2 p-2 ${activeTab === 'map' ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
+        >
+          Combat Map
+        </button>        
+        <button
           onClick={() => setActiveTab('mechBuilder')}
-          className={`p-2 ${activeTab === 'mechBuilder' ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
+          className={`mr-2 p-2 ${activeTab === 'mechBuilder' ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
         >
           Mech Builder
         </button>
@@ -106,7 +123,7 @@ const App = () => {
       {activeTab === 'combat' && (
         <CombatTracker
           customMechPatterns={customMechPatterns}
-          entities={combatEntities}
+          entities={combatEntities || []}
           setEntities={setCombatEntities}
         />
       )}
@@ -117,6 +134,13 @@ const App = () => {
           customMechPatterns={customMechPatterns}
           deleteCustomMechPattern={deleteCustomMechPattern}
           updateCombatEntitiesFromPattern={updateCombatEntitiesFromPattern}
+        />
+      )}
+
+      {activeTab === 'map' && (
+        <CombatMap
+          entities={combatEntities}
+          updateEntityPosition={updateEntityPosition}
         />
       )}
     </div>
