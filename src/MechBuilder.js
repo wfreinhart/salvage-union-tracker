@@ -10,31 +10,41 @@ import Tooltip from './components/Tooltip';
 const EntityComponent = ({ item, type, isAttached, onAdd, onRemove }) => {
     const renderTooltipContent = () => {
         if (type === 'ability') {
-            return (
-                <div className="space-y-1">
-                    <p><span className="font-bold">Description:</span> {item.description}</p>
-                    {item.range && <p><span className="font-bold">Range:</span> {item.range}</p>}
-                    {item.damage && <p><span className="font-bold">Damage:</span> {item.damage}</p>}
-                    {item.traits && <p><span className="font-bold">Traits:</span> {item.traits.join(', ')}</p>}
-                </div>
-            );
+          return (
+            <div className="space-y-1">
+              <p><span className="font-bold">Description:</span> {item.description}</p>
+              {item.range && <p><span className="font-bold">Range:</span> {item.range}</p>}
+              {item.damage && <p><span className="font-bold">Damage:</span> {item.damage}</p>}
+              {item.traits && <p><span className="font-bold">Traits:</span> {item.traits.join(', ')}</p>}
+            </div>
+          );
         } else {
-            const data = type === 'system' ? systemsData.systems[item.name || item] : modulesData.modules[item.name || item];
-            return data ? (
-                <div className="space-y-1">
-                    <p><span className="font-bold">Tech Level:</span> {data.techLevel}</p>
-                    <p><span className="font-bold">Slots Required:</span> {data.slotsRequired}</p>
-                    <p><span className="font-bold">Salvage Value:</span> {data.salvageValue}</p>
-                    {data.range && <p><span className="font-bold">Range:</span> {data.range}</p>}
-                    {data.damage && <p><span className="font-bold">Damage:</span> {data.damage}</p>}
-                    {data.traits && <p><span className="font-bold">Traits:</span> {data.traits.join(', ')}</p>}
-                    <p><span className="font-bold">Description:</span> {data.description}</p>
-                </div>
-            ) : (
-                <p>No data available for {item.name || item}</p>
-            );
+          const data = type === 'system' ? systemsData.systems[item.name || item] : modulesData.modules[item.name || item];
+          return data ? (
+            <div className="space-y-1">
+              <p><span className="font-bold">Tech Level:</span> {data.techLevel}</p>
+              <p><span className="font-bold">Slots Required:</span> {data.slotsRequired}</p>
+              <p><span className="font-bold">Salvage Value:</span> {data.salvageValue}</p>
+              {data.range && <p><span className="font-bold">Range:</span> {data.range}</p>}
+              {data.damage && <p><span className="font-bold">Damage:</span> {data.damage}</p>}
+              {data.traits && <p><span className="font-bold">Traits:</span> {data.traits.join(', ')}</p>}
+              <p><span className="font-bold">Description:</span> {data.description}</p>
+              {data.actions && data.actions.length > 0 && (
+                <>
+                  <p className="font-bold">Actions:</p>
+                  {data.actions.map((action, index) => (
+                    <div key={index} className="ml-2">
+                      <p><span className="font-bold">{action.name}</span> ({action.actionType}, {action.range}, EP: {action.epCost}) {action.description}</p>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          ) : (
+            <p>No data available for {item.name || item}</p>
+          );
         }
-    };
+      };
 
     return (
         <Card className="mb-1">
