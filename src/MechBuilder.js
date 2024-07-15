@@ -7,62 +7,98 @@ import systemsData from './data/systems.json';
 import modulesData from './data/modules.json';
 import Tooltip from './components/Tooltip';
 
+const SlotDisplay = ({ usedSlots, totalSlots, label }) => {
+    const dots = [];
+    for (let i = 0; i < totalSlots; i++) {
+        dots.push(
+            <span
+                key={i}
+                className={`inline-block w-3 h-3 rounded-full mr-1 ${i < usedSlots ? 'bg-gray-400' : 'bg-green-500'}`}
+            ></span>
+        );
+    }
+
+    return (
+        <div className="flex items-center mb-2">
+            <span className="mr-2 font-bold">{label}:</span>
+            <div>{dots}</div>
+            <span className="ml-2">
+                ({usedSlots}/{totalSlots})
+            </span>
+        </div>
+    );
+};
+
 const EntityComponent = ({ item, type, isAttached, onAdd, onRemove }) => {
     const renderTooltipContent = () => {
         if (type === 'ability') {
-          return (
-            <div className="space-y-1">
-              <p><span className="font-bold">Description:</span> {item.description}</p>
-              {item.range && <p><span className="font-bold">Range:</span> {item.range}</p>}
-              {item.damage && <p><span className="font-bold">Damage:</span> {item.damage}</p>}
-              {item.traits && <p><span className="font-bold">Traits:</span> {item.traits.join(', ')}</p>}
-            </div>
-          );
+            return (
+                <div className="space-y-1">
+                    <p><span className="font-bold">Description:</span> {item.description}</p>
+                    {item.range && <p><span className="font-bold">Range:</span> {item.range}</p>}
+                    {item.damage && <p><span className="font-bold">Damage:</span> {item.damage}</p>}
+                    {item.traits && <p><span className="font-bold">Traits:</span> {item.traits.join(', ')}</p>}
+                </div>
+            );
         } else {
-          const data = type === 'system' ? systemsData.systems[item.name || item] : modulesData.modules[item.name || item];
-          return data ? (
-            <div className="space-y-1">
-              <p><span className="font-bold">Tech Level:</span> {data.techLevel}</p>
-              <p><span className="font-bold">Slots Required:</span> {data.slotsRequired}</p>
-              <p><span className="font-bold">Salvage Value:</span> {data.salvageValue}</p>
-              {data.range && <p><span className="font-bold">Range:</span> {data.range}</p>}
-              {data.damage && <p><span className="font-bold">Damage:</span> {data.damage}</p>}
-              {data.traits && <p><span className="font-bold">Traits:</span> {data.traits.join(', ')}</p>}
-              <p><span className="font-bold">Description:</span> {data.description}</p>
-              {data.actions && data.actions.length > 0 && (
-                <>
-                  <p className="font-bold">Actions:</p>
-                  {data.actions.map((action, index) => (
-                    <div key={index} className="ml-2">
-                      <p><span className="font-bold">{action.name}</span> ({action.actionType}, {action.range}, EP: {action.epCost}) {action.description}</p>
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
-          ) : (
-            <p>No data available for {item.name || item}</p>
-          );
+            const data = type === 'system' ? systemsData.systems[item.name || item] : modulesData.modules[item.name || item];
+            return data ? (
+                <div className="space-y-1">
+                    <p><span className="font-bold">Tech Level:</span> {data.techLevel}</p>
+                    <p><span className="font-bold">Slots Required:</span> {data.slotsRequired}</p>
+                    <p><span className="font-bold">Salvage Value:</span> {data.salvageValue}</p>
+                    {data.range && <p><span className="font-bold">Range:</span> {data.range}</p>}
+                    {data.damage && <p><span className="font-bold">Damage:</span> {data.damage}</p>}
+                    {data.traits && <p><span className="font-bold">Traits:</span> {data.traits.join(', ')}</p>}
+                    <p><span className="font-bold">Description:</span> {data.description}</p>
+                    {data.actions && data.actions.length > 0 && (
+                        <>
+                            <p className="font-bold">Actions:</p>
+                            {data.actions.map((action, index) => (
+                                <div key={index} className="ml-2">
+                                    <p><span className="font-bold">{action.name}</span> ({action.actionType}, {action.range}, EP: {action.epCost}) {action.description}</p>
+                                </div>
+                            ))}
+                        </>
+                    )}
+                </div>
+            ) : (
+                <p>No data available for {item.name || item}</p>
+            );
         }
-      };
+    };
+
+    const renderSlotDots = () => {
+        const slotsRequired = item.slotsRequired || 0;
+        const dots = [];
+        for (let i = 0; i < slotsRequired; i++) {
+            dots.push(
+                <span key={i} className="inline-block w-2 h-2 bg-gray-400 rounded-full mr-1"></span>
+            );
+        }
+        return <div className="ml-2">{dots}</div>;
+    };
 
     return (
         <Card className="mb-1">
             <CardContent className="p-2 text-sm flex justify-between items-center">
-                <Tooltip content={renderTooltipContent()}>
-                    <span className="flex-grow">{item.name || item}</span>
-                </Tooltip>
+                <div className="flex items-center flex-grow">
+                    <Tooltip content={renderTooltipContent()}>
+                        <span className="flex-grow">{item.name || item}</span>
+                    </Tooltip>
+                    {renderSlotDots()}
+                </div>
                 {isAttached ? (
                     <button
                         onClick={() => onRemove(item)}
-                        className="p-1 bg-red-500 text-white rounded-full"
+                        className="p-1 bg-red-500 text-white rounded-full ml-2"
                     >
                         <Minus size={14} />
                     </button>
                 ) : (
                     <button
                         onClick={() => onAdd(item)}
-                        className="p-1 bg-green-500 text-white rounded-full"
+                        className="p-1 bg-green-500 text-white rounded-full ml-2"
                     >
                         <Plus size={14} />
                     </button>
@@ -451,8 +487,16 @@ const MechBuilder = ({ saveCustomMechPattern, customMechPatterns, deleteCustomMe
                         <StatCounter label="SP" value={customMech.sp} max={customMech.maxSp} />
                         <StatCounter label="EP" value={customMech.ep} max={customMech.maxEp} />
                         <StatCounter label="Heat" value={customMech.heat} max={customMech.maxHeat} />
-                        <p>System Slots: {customMech.usedSystemSlots}/{customMech.systemSlots}</p>
-                        <p>Module Slots: {customMech.usedModuleSlots}/{customMech.moduleSlots}</p>
+                        <SlotDisplay
+                            usedSlots={customMech.usedSystemSlots}
+                            totalSlots={customMech.systemSlots}
+                            label="System Slots"
+                        />
+                        <SlotDisplay
+                            usedSlots={customMech.usedModuleSlots}
+                            totalSlots={customMech.moduleSlots}
+                            label="Module Slots"
+                        />
                         <p>Scrap by Tech Level:</p>
                         {Object.entries(customMech.scrapByTL).map(([tl, value]) => (
                             <p key={tl}>TL {tl}: {value}</p>

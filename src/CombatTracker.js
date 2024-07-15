@@ -49,13 +49,17 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
 
     const addEntity = () => {
         let newEntity;
-        if (selectedEntityType === 'mech') {
+        if (selectedEntityType === 'Mechs') {  // Changed from 'mech' to 'Mechs'
             if (selectedChassis === 'custom') {
                 const customPattern = customMechPatterns.find(pattern => pattern.name === selectedPattern);
+                if (!customPattern) {
+                    console.error('Custom pattern not found');
+                    return;
+                }
                 newEntity = {
                     id: Date.now().toString(),
                     ...customPattern,
-                    patternId: customPattern.id, // Store the pattern ID
+                    patternId: customPattern.id,
                     pilots: [],
                     hasActed: false,
                     isDisabled: false,
@@ -103,9 +107,14 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
                 position: { x: Math.floor(Math.random() * 700) + 50, y: Math.floor(Math.random() * 500) + 50 },
             };
         }
-        setEntities([...entities, newEntity]);
-        setShowAddModal(false);
-        resetSelections();
+
+        if (newEntity) {
+            setEntities(prevEntities => [...prevEntities, newEntity]);
+            setShowAddModal(false);
+            resetSelections();
+        } else {
+            console.error('Failed to create new entity');
+        }
     };
 
     const duplicateEntity = (entityToDuplicate) => {
@@ -350,7 +359,7 @@ const CombatTracker = ({ customMechPatterns, entities, setEntities }) => {
                                 onClick={addEntity}
                                 className="p-2 bg-blue-500 text-white rounded"
                                 disabled={
-                                    (selectedEntityType === 'Mechs' && (!selectedChassis || (selectedChassis !== 'custom' && !selectedPattern))) ||
+                                    (selectedEntityType === 'Mechs' && (!selectedChassis || (selectedChassis !== 'custom' && !selectedPattern) || (selectedChassis === 'custom' && !selectedPattern))) ||
                                     (selectedEntityType !== 'Mechs' && !selectedEntity)
                                 }
                             >
