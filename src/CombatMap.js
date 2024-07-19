@@ -1,13 +1,13 @@
-// CombatMap.js
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 
 const CombatMap = ({ entities, updateEntityPosition }) => {
   const canvasRef = useRef(null);
   const [dragging, setDragging] = useState(null);
   const [panning, setPanning] = useState(false);
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [viewportTransform, setViewportTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [lastPanPoint, setLastPanPoint] = useState(null);
-  const [scale, setScale] = useState(1);
+  const [mapImage, setMapImage] = useState(null);
+  const [mapScale, setMapScale] = useState(1);
 
   const drawMap = useCallback(() => {
     const canvas = canvasRef.current;
@@ -15,16 +15,23 @@ const CombatMap = ({ entities, updateEntityPosition }) => {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
-    ctx.translate(panOffset.x, panOffset.y);
-    ctx.scale(scale, scale);
+    
+    // Apply viewport transform
+    ctx.translate(viewportTransform.x, viewportTransform.y);
+    ctx.scale(viewportTransform.scale, viewportTransform.scale);
 
-    // Draw background (optional)
-    ctx.fillStyle = '#f0f0f0';
-    ctx.fillRect(-panOffset.x / scale, -panOffset.y / scale, canvas.width / scale, canvas.height / scale);
-
-    // Draw border
-    ctx.strokeStyle = 'black';
-    ctx.strokeRect(-panOffset.x / scale, -panOffset.y / scale, canvas.width / scale, canvas.height / scale);
+    // Draw imported map if available
+    if (mapImage) {
+      const scaledWidth = canvas.width * mapScale;
+      const scaledHeight = canvas.height * mapScale;
+      const offsetX = (canvas.width - scaledWidth) / 2;
+      const offsetY = (canvas.height - scaledHeight) / 2;
+      ctx.drawImage(mapImage, offsetX, offsetY, scaledWidth, scaledHeight);
+    } else {
+      // Draw default background
+      ctx.fillStyle = '#f0f0f0';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 
     entities.forEach((entity) => {
       const x = entity.position?.x || 0;
@@ -43,17 +50,17 @@ const CombatMap = ({ entities, updateEntityPosition }) => {
       ctx.fillStyle = colorMap[entity.groupColor] || '#000000';
       ctx.fill();
       ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 2 / scale;
+      ctx.lineWidth = 2 / viewportTransform.scale;
       ctx.stroke();
 
       ctx.fillStyle = '#000000';
-      ctx.font = `${12 / scale}px Arial`;
+      ctx.font = `${12 / viewportTransform.scale}px Arial`;
       ctx.textAlign = 'center';
-      ctx.fillText(entity.name, x, y + 5 / scale);
+      ctx.fillText(entity.name, x, y + 5 / viewportTransform.scale);
     });
 
     ctx.restore();
-  }, [entities, panOffset, scale]);
+  }, [entities, viewportTransform, mapImage, mapScale]);
 
   useEffect(() => {
     drawMap();
@@ -62,14 +69,14 @@ const CombatMap = ({ entities, updateEntityPosition }) => {
   const handleMouseDown = (e) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left - panOffset.x) / scale;
-    const y = (e.clientY - rect.top - panOffset.y) / scale;
+    const x = (e.clientX - rect.left - viewportTransform.x) / viewportTransform.scale;
+    const y = (e.clientY - rect.top - viewportTransform.y) / viewportTransform.scale;
 
     let entityFound = false;
     entities.forEach((entity) => {
       const dx = x - entity.position.x;
       const dy = y - entity.position.y;
-      if (dx * dx + dy * dy < 400) { // 20 * 20 = 400 (radius squared)
+      if (dx * dx + dy * dy < 400 / (viewportTransform.scale * viewportTransform.scale)) {
         setDragging(entity);
         entityFound = true;
       }
@@ -85,14 +92,14 @@ const CombatMap = ({ entities, updateEntityPosition }) => {
     if (dragging) {
       const canvas = canvasRef.current;
       const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left - panOffset.x) / scale;
-      const y = (e.clientY - rect.top - panOffset.y) / scale;
+      const x = (e.clientX - rect.left - viewportTransform.x) / viewportTransform.scale;
+      const y = (e.clientY - rect.top - viewportTransform.y) / viewportTransform.scale;
 
       updateEntityPosition(dragging.id, x, y);
     } else if (panning) {
       const dx = e.clientX - lastPanPoint.x;
       const dy = e.clientY - lastPanPoint.y;
-      setPanOffset(prev => ({ x: prev.x + dx, y: prev.y + dy }));
+      setViewportTransform(prev => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
       setLastPanPoint({ x: e.clientX, y: e.clientY });
     }
   };
@@ -110,21 +117,39 @@ const CombatMap = ({ entities, updateEntityPosition }) => {
     const mouseY = e.clientY - rect.top;
 
     const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-    const newScale = scale * zoomFactor;
+    const newScale = viewportTransform.scale * zoomFactor;
 
     // Limit zoom level (optional)
     if (newScale < 0.1 || newScale > 10) return;
 
-    const newPanOffsetX = mouseX - (mouseX - panOffset.x) * zoomFactor;
-    const newPanOffsetY = mouseY - (mouseY - panOffset.y) * zoomFactor;
+    const scaleChange = newScale - viewportTransform.scale;
+    const newX = viewportTransform.x - ((mouseX - viewportTransform.x) / viewportTransform.scale) * scaleChange;
+    const newY = viewportTransform.y - ((mouseY - viewportTransform.y) / viewportTransform.scale) * scaleChange;
 
-    setScale(newScale);
-    setPanOffset({ x: newPanOffsetX, y: newPanOffsetY });
+    setViewportTransform({ x: newX, y: newY, scale: newScale });
   };
 
   const resetZoom = () => {
-    setScale(1);
-    setPanOffset({ x: 0, y: 0 });
+    setViewportTransform({ x: 0, y: 0, scale: 1 });
+  };
+
+  const handleMapUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          setMapImage(img);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleMapScaleChange = (e) => {
+    setMapScale(parseFloat(e.target.value));
   };
 
   return (
@@ -140,14 +165,34 @@ const CombatMap = ({ entities, updateEntityPosition }) => {
         onWheel={handleWheel}
         style={{ border: '1px solid black' }}
       />
-      <div className="absolute top-2 left-2 bg-white bg-opacity-75 p-2 rounded">
-        <span className="mr-2">Zoom: {(scale * 100).toFixed(0)}%</span>
+      <div className="absolute top-2 left-2 bg-white bg-opacity-75 p-2 rounded flex items-center">
+        <span className="mr-2">Zoom: {(viewportTransform.scale * 100).toFixed(0)}%</span>
         <button
           onClick={resetZoom}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2"
         >
           Reset Zoom
         </button>
+        <input
+          type="file"
+          accept=".svg,.png,.jpg,.jpeg"
+          onChange={handleMapUpload}
+          className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded mr-2"
+        />
+        <div className="flex items-center ml-2">
+          <label htmlFor="mapScale" className="mr-2">Map Scale:</label>
+          <input
+            type="range"
+            id="mapScale"
+            min="0.1"
+            max="2"
+            step="0.1"
+            value={mapScale}
+            onChange={handleMapScaleChange}
+            className="w-32"
+          />
+          <span className="ml-2">{mapScale.toFixed(1)}x</span>
+        </div>
       </div>
     </div>
   );
