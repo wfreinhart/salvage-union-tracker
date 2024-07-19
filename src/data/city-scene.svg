@@ -1,0 +1,28 @@
+<svg width="800" height="800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#7a7a7a" />
+
+  <!-- Ruined Buildings -->
+  <rect x="50" y="50" width="200" height="200" fill="#4d4d4d" stroke="#2d2d2d" stroke-width="3" />
+  <rect x="550" y="50" width="200" height="200" fill="#4d4d4d" stroke="#2d2d2d" stroke-width="3" />
+  <rect x="50" y="550" width="200" height="200" fill="#4d4d4d" stroke="#2d2d2d" stroke-width="3" />
+  <rect x="550" y="550" width="200" height="200" fill="#4d4d4d" stroke="#2d2d2d" stroke-width="3" />
+
+  <!-- Debris -->
+  <circle cx="150" cy="150" r="20" fill="#3a3a3a" />
+  <circle cx="650" cy="150" r="20" fill="#3a3a3a" />
+  <circle cx="150" cy="650" r="20" fill="#3a3a3a" />
+  <circle cx="650" cy="650" r="20" fill="#3a3a3a" />
+  <rect x="300" y="300" width="50" height="50" fill="#3a3a3a" />
+  <rect x="450" y="450" width="50" height="50" fill="#3a3a3a" />
+
+  <!-- Makeshift Barricades -->
+  <rect x="300" y="100" width="200" height="20" fill="#5c5c5c" />
+  <rect x="100" y="300" width="20" height="200" fill="#5c5c5c" />
+  <rect x="500" y="300" width="200" height="20" fill="#5c5c5c" />
+  <rect x="300" y="500" width="20" height="200" fill="#5c5c5c" />
+
+  <!-- Roads -->
+  <rect x="0" y="375" width="800" height="50" fill="#2d2d2d" />
+  <rect x="375" y="0" width="50" height="800" fill="#2d2d2d" />
+</svg>

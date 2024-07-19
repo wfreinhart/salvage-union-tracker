@@ -9,34 +9,59 @@ const CombatMap = ({ entities, updateEntityPosition }) => {
   const [mapImage, setMapImage] = useState(null);
   const [mapScale, setMapScale] = useState(1);
 
+  const createHexPattern = (ctx) => {
+    const patternCanvas = document.createElement('canvas');
+    const patternContext = patternCanvas.getContext('2d');
+    patternCanvas.width = 56;
+    patternCanvas.height = 100;
+  
+    patternContext.strokeStyle = '#a0a0a0';
+    patternContext.lineWidth = 1.0;
+    patternContext.beginPath();
+    patternContext.moveTo(28, 66);
+    patternContext.lineTo(0, 50);
+    patternContext.lineTo(0, 16);
+    patternContext.lineTo(28, 0);
+    patternContext.lineTo(56, 16);
+    patternContext.lineTo(56, 50);
+    patternContext.lineTo(28, 66);
+    patternContext.lineTo(28, 100);
+    patternContext.stroke();
+  
+    return ctx.createPattern(patternCanvas, 'repeat');
+  };
+
   const drawMap = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-
+  
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     
     // Apply viewport transform
     ctx.translate(viewportTransform.x, viewportTransform.y);
     ctx.scale(viewportTransform.scale, viewportTransform.scale);
-
+  
     // Draw imported map if available
     if (mapImage) {
-      const scaledWidth = canvas.width * mapScale;
-      const scaledHeight = canvas.height * mapScale;
-      const offsetX = (canvas.width - scaledWidth) / 2;
-      const offsetY = (canvas.height - scaledHeight) / 2;
-      ctx.drawImage(mapImage, offsetX, offsetY, scaledWidth, scaledHeight);
-    } else {
-      // Draw default background
-      ctx.fillStyle = '#f0f0f0';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const scaledWidth = mapImage.width * mapScale;
+      const scaledHeight = mapImage.height * mapScale;
+      
+      ctx.drawImage(mapImage, 0, 0, scaledWidth, scaledHeight);
     }
-
+  
+    // Create and draw the hex grid pattern
+    const hexPattern = createHexPattern(ctx);
+    ctx.fillStyle = hexPattern;
+    ctx.globalAlpha = 0.3; // Adjust this value to change the grid opacity
+    ctx.fillRect(0, 0, canvas.width / viewportTransform.scale, canvas.height / viewportTransform.scale);
+    ctx.globalAlpha = 1; // Reset the global alpha
+  
+    // Draw entities
     entities.forEach((entity) => {
       const x = entity.position?.x || 0;
       const y = entity.position?.y || 0;
-
+  
       const colorMap = {
         'bg-white': '#FFFFFF',
         'bg-red-100': '#FEE2E2',
@@ -44,7 +69,7 @@ const CombatMap = ({ entities, updateEntityPosition }) => {
         'bg-green-100': '#D1FAE5',
         'bg-yellow-100': '#FEF3C7',
       };
-
+  
       ctx.beginPath();
       ctx.arc(x, y, 20, 0, 2 * Math.PI);
       ctx.fillStyle = colorMap[entity.groupColor] || '#000000';
@@ -52,13 +77,13 @@ const CombatMap = ({ entities, updateEntityPosition }) => {
       ctx.strokeStyle = '#000000';
       ctx.lineWidth = 2 / viewportTransform.scale;
       ctx.stroke();
-
+  
       ctx.fillStyle = '#000000';
       ctx.font = `${12 / viewportTransform.scale}px Arial`;
       ctx.textAlign = 'center';
       ctx.fillText(entity.name, x, y + 5 / viewportTransform.scale);
     });
-
+  
     ctx.restore();
   }, [entities, viewportTransform, mapImage, mapScale]);
 
@@ -94,7 +119,7 @@ const CombatMap = ({ entities, updateEntityPosition }) => {
       const rect = canvas.getBoundingClientRect();
       const x = (e.clientX - rect.left - viewportTransform.x) / viewportTransform.scale;
       const y = (e.clientY - rect.top - viewportTransform.y) / viewportTransform.scale;
-
+  
       updateEntityPosition(dragging.id, x, y);
     } else if (panning) {
       const dx = e.clientX - lastPanPoint.x;
